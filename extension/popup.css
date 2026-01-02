@@ -36,7 +36,7 @@ code {
 
 .url-container {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto;
   grid-template-rows: auto auto;
   gap: 5px;
   align-items: center;
@@ -74,7 +74,6 @@ code {
 }
 
 .copy-btn {
-  grid-column: 2;
   grid-row: 2;
   background: #007bff;
   border: none;
@@ -90,7 +89,6 @@ code {
 }
 
 .copy-message {
-  grid-column: 3;
   grid-row: 2;
   color: #28a745;
   font-size: 14px;
