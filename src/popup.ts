@@ -375,6 +375,19 @@ function updatePopupContent(results: Result[]): void {
   }
   urlList.innerHTML = '';
 
+  const messageElement = document.getElementById('message') as HTMLElement;
+  if (!messageElement) {
+    console.error("Message element not found in popup.");
+    return;
+  }
+  messageElement.innerHTML = '';
+
+  if (results.length === 0) {
+    messageElement.className = 'no-rewriter-message';
+    messageElement.textContent = 'No rewriter found for this URL.';
+    return;
+  }
+
   results.forEach((result) => {
     const url = result.getUrl();
     const name = result.getName();
@@ -428,11 +441,7 @@ function updatePopupContent(results: Result[]): void {
 function tryRewriteUrlAndUpdatePopup(url: string) {
   const rewriterMatcher = rewriterFactory.getRewriterMatcher();
   const resultSet = rewriterMatcher.match(url);
-  if (resultSet.isEmpty()) {
-    console.log("No rewriter found for this URL.");
-    return;
-  }
-
+  
   const results = resultSet.getResults();
   console.log(results);
   updatePopupContent(results);
