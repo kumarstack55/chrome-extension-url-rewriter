@@ -40,28 +40,248 @@ class AmazonCoJpRewriter extends UrlRewriter {
   }
 }
 
-class UrchinRemoverRewriter extends UrlRewriter {
+class SupportGoogleComRewriter extends UrlRewriter {
   getName(): string {
-    return "Urchin Remover Rewriter";
+    return "support.google.com Language Switcher";
   }
 
   getRewritablePattern(): string {
-    return ".*[?&]utm_.*";
+    return "^https://support\\.google\\.com/";
+  }
+
+  rewriteUrl(url: string): string {
+    const HL = 'hl';
+
+    const u = new URL(url);
+    if (u.searchParams.has(HL)) {
+      const value = u.searchParams.get(HL);
+      let newValue = 'en';
+      if (value === 'en') {
+        newValue = 'ja';
+      }
+      u.searchParams.set(HL, newValue);
+    }
+    return u.toString();
+  }
+}
+
+class GadRemoverRewriter extends UrlRewriter {
+  // Urchin Tracking Module (UTM) parameters
+  // https://support.google.com/analytics/answer/11242870?hl=en
+  private utmKeywordsMap: Map<string, boolean> = new Map([
+    ['utm_source', true],
+    ['utm_medium', true],
+    ['utm_campaign', true],
+    ['utm_term', true],
+    ['utm_content', true],
+    ['utm_source_platform', true],
+    ['utm_creative_format', true],
+    ['utm_marketing_tactic', true],
+  ])
+
+  private gadKeywordsMap: Map<string, boolean> = new Map([
+    // https://support.google.com/google-ads/answer/9744275?hl=en
+    // > Google Click ID (GCLID) is a URL parameter passed with ad clicks.
+    ['gclid', true],
+    // https://support.google.com/analytics/answer/11367152?hl=en
+    // > For web to app measurement, the parameter is known as GBRAID, and for app to web measurement, it's known as WBRAID.
+    ['gbraid', true],
+    ['wbraid', true],
+  ])
+
+  getName(): string {
+    return "Google Ad Remover";
+  }
+
+  getRewritablePattern(): string {
+    return ".*[?&](?:utm_|gad_|gclid=|gbraid=|wbraid=).*";
+  }
+
+  private isKeywordToRemove(key: string): boolean {
+    // https://support.google.com/google-ads/answer/16193746?hl=en
+    // > gad_* parameters are URL parameters that provide aggregate data about your campaigns.
+    if (key.startsWith('gad_')) {
+      return true;
+    }
+
+    return this.utmKeywordsMap.has(key) || this.gadKeywordsMap.has(key);
   }
 
   rewriteUrl(url: string): string {
     const u = new URL(url);
+    const searchParamsKeys = Array.from(u.searchParams.keys());
+    searchParamsKeys.forEach((key) => {
+      console.log(`Checking key: ${key}`);
+      if (this.isKeywordToRemove(key)) {
+        console.log(`Removing key: ${key}`);
+        u.searchParams.delete(key);
+      }
+    });
 
-    // https://support.google.com/analytics/answer/11242870?hl=en
-    u.searchParams.delete('utm_source');
-    u.searchParams.delete('utm_medium');
-    u.searchParams.delete('utm_campaign');
-    u.searchParams.delete('utm_term');
-    u.searchParams.delete('utm_content');
-    u.searchParams.delete('utm_source_platform');
-    u.searchParams.delete('utm_creative_format');
-    u.searchParams.delete('utm_marketing_tactic');
+    return u.toString();
+  }
+}
 
+class LanguageCountryRewriter extends UrlRewriter {
+  getName(): string {
+    return "Language Country Switcher";
+  }
+
+  getRewritablePattern(): string {
+    return "/[a-z]{2}-[A-Za-z]{2}/";
+  }
+
+  private isLanguageCountry(part: string): boolean {
+    try {
+      const [canon] = Intl.getCanonicalLocales(String(part).replace("_", "-"));
+      return /^[a-z]{2,3}-[A-Z]{2}$/.test(canon);
+    } catch {
+      return false;
+    }
+  }
+
+  private ucFirst(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  private isUcFirst(str: string): boolean {
+    const firstChar = str.charAt(0);
+    const rest = str.slice(1);
+    return firstChar === firstChar.toUpperCase() && rest === rest.toLowerCase();
+  }
+
+  private isLower(str: string): boolean {
+    return str === str.toLowerCase();
+  }
+
+  rewriteUrl(url: string): string {
+    const u = new URL(url);
+    const pathname = u.pathname;
+
+    const pathParts = pathname.split('/');
+    const newPathParts = pathParts.map(part => {
+      if (this.isLanguageCountry(part)) {
+        console.log(`Found language-country part: ${part}`);
+
+        const [lang, country] = part.split('-');
+
+        let newLang = "en"
+        let newCountry = "US"
+        if (part.toLocaleLowerCase() === 'en-us') {
+          newLang = "ja"
+          newCountry = "JP"
+        }
+
+        if (this.isLower(lang)) {
+          newLang = newLang.toLowerCase();
+        } else if (this.isUcFirst(lang)) {
+          newLang = this.ucFirst(newLang);
+        } else {
+          newLang = newLang.toUpperCase();
+        }
+
+        if (this.isLower(country)) {
+          newCountry = newCountry.toLowerCase();
+        } else if (this.isUcFirst(country)) {
+          newCountry = this.ucFirst(newCountry);
+        } else {
+          newCountry = newCountry.toUpperCase();
+        }
+
+        return `${newLang}-${newCountry}`;
+      }
+
+      return part;
+    });
+
+    u.pathname = newPathParts.join('/');
+    return u.toString();
+  }
+}
+
+class LanguageRewriter extends UrlRewriter {
+  // ISO 639-1 (2-letter) codes
+  private readonly ISO639_1 : Set<string> = new Set([
+    "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az",
+    "ba", "be", "bg", "bh", "bi", "bm", "bn", "bo", "br", "bs",
+    "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy",
+    "da", "de", "dv", "dz", "ee", "el", "en", "eo", "es", "et", "eu",
+    "fa", "ff", "fi", "fj", "fo", "fr", "fy",
+    "ga", "gd", "gl", "gn", "gu", "gv",
+    "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz",
+    "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu",
+    "ja", "jv",
+    "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn", "ko", "kr", "ks", "ku", "kv", "kw", "ky",
+    "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv",
+    "mg", "mh", "mi", "mk", "ml", "mn", "mr", "ms", "mt", "my",
+    "na", "nb", "nd", "ne", "ng", "nl", "nn", "no", "nr", "nv", "ny",
+    "oc", "oj", "om", "or", "os",
+    "pa", "pi", "pl", "ps", "pt",
+    "qu",
+    "rm", "rn", "ro", "ru", "rw",
+    "sa", "sc", "sd", "se", "sg", "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st", "su", "sv", "sw",
+    "ta", "te", "tg", "th", "ti", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty",
+    "ug", "uk", "ur", "uz",
+    "ve", "vi", "vo",
+    "wa", "wo",
+    "xh",
+    "yi", "yo",
+    "za", "zh", "zu"
+  ]);
+
+  getName(): string {
+    return "Language Switcher";
+  }
+
+  getRewritablePattern(): string {
+    return "/[A-Za-z]{2}/";
+  }
+
+  private ucFirst(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  private isUcFirst(str: string): boolean {
+    const firstChar = str.charAt(0);
+    const rest = str.slice(1);
+    return firstChar === firstChar.toUpperCase() && rest === rest.toLowerCase();
+  }
+
+  private isLower(str: string): boolean {
+    return str === str.toLowerCase();
+  }
+
+  rewriteUrl(url: string): string {
+    const u = new URL(url);
+    const pathname = u.pathname;
+
+    const pathParts = pathname.split('/');
+    const newPathParts = pathParts.map(part => {
+      console.log(`Checking part: ${part}`);
+
+      const lowerPart = part.toLowerCase();
+      if (this.ISO639_1.has(lowerPart)) {
+        console.log(`Found language part: ${part}`);
+
+        let newLang = "en"
+        if (part === 'en') {
+          newLang = "ja"
+        }
+
+        if (this.isLower(part)) {
+          newLang = newLang.toLowerCase();
+        } else if (this.isUcFirst(part)) {
+          newLang = this.ucFirst(newLang);
+        } else {
+          newLang = newLang.toUpperCase();
+        }
+        return newLang;
+      }
+
+      return part;
+    });
+
+    u.pathname = newPathParts.join('/');
     return u.toString();
   }
 }
@@ -140,38 +360,82 @@ class RewriterFactory {
   }
 }
 
-function getRewritedUrl(url: string): string | null {
-  const rewriterFactory = new RewriterFactory();
-  rewriterFactory.addRewriter(new AmazonCoJpRewriter());
-  rewriterFactory.addRewriter(new UrchinRemoverRewriter());
+const rewriterFactory = new RewriterFactory();
+rewriterFactory.addRewriter(new AmazonCoJpRewriter());
+rewriterFactory.addRewriter(new SupportGoogleComRewriter());
+rewriterFactory.addRewriter(new GadRemoverRewriter());
+rewriterFactory.addRewriter(new LanguageCountryRewriter());
+rewriterFactory.addRewriter(new LanguageRewriter());
 
-  const rewriterMatcher = rewriterFactory.getRewriterMatcher();
-  const resultSet = rewriterMatcher.match(url);
-
-  if (resultSet.isEmpty()) {
-    return null;
+function updatePopupContent(results: Result[]): void {
+  const urlList = document.getElementById('url-list') as HTMLElement;
+  if (!urlList) {
+    console.error("URL list element not found in popup.");
+    return;
   }
+  urlList.innerHTML = '';
 
-  // Return the first rewritten URL
-  return resultSet.getResults()[0].getUrl();
+  results.forEach((result) => {
+    const url = result.getUrl();
+    const name = result.getName();
+
+    // Create container for each URL
+    const container = document.createElement('div');
+    container.className = 'url-container';
+
+    // Create name label
+    const nameLabel = document.createElement('div');
+    nameLabel.className = 'url-name';
+    nameLabel.textContent = name;
+    container.appendChild(nameLabel);
+
+    // Create URL link
+    const urlLink = document.createElement('a');
+    urlLink.className = 'url-display';
+    urlLink.href = url;
+    urlLink.textContent = url;
+    urlLink.target = '_blank';
+    container.appendChild(urlLink);
+
+    // Create copy button
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = '🔗';
+    copyBtn.title = 'Copy to clipboard';
+    container.appendChild(copyBtn);
+
+    // Create copy message
+    const copyMessage = document.createElement('div');
+    copyMessage.className = 'copy-message';
+    copyMessage.textContent = 'Copied!';
+    copyMessage.style.display = 'none';
+    container.appendChild(copyMessage);
+
+    // Add copy functionality
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(url).then(() => {
+        copyMessage.style.display = 'block';
+        setTimeout(() => {
+          copyMessage.style.display = 'none';
+        }, 2000);
+      });
+    });
+
+    urlList.appendChild(container);
+  });
 }
 
-function updatePopupContent(url: string): void {
-  const urlDisplay = document.getElementById('url-display') as HTMLAnchorElement;
-  urlDisplay.href = url;
-  urlDisplay.textContent = url;
+function tryRewriteUrlAndUpdatePopup(url: string) {
+  const rewriterMatcher = rewriterFactory.getRewriterMatcher();
+  const resultSet = rewriterMatcher.match(url);
+  if (resultSet.isEmpty()) {
+    console.log("No rewriter found for this URL.");
+    return;
+  }
 
-  const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
-  const copyMessage = document.getElementById('copy-message') as HTMLElement;
-
-  copyBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(url).then(() => {
-      copyMessage.style.display = 'block';
-      setTimeout(() => {
-        copyMessage.style.display = 'none';
-      }, 2000);
-    });
-  });
+  const results = resultSet.getResults();
+  console.log(results);
+  updatePopupContent(results);
 }
 
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -184,12 +448,5 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     return;
   }
 
-  const url = getRewritedUrl(activeTabUrl);
-  if (!url) {
-    console.log("No rewriter found for this URL.");
-    return;
-  }
-  console.log(url);
-
-  updatePopupContent(url);
+  tryRewriteUrlAndUpdatePopup(activeTabUrl);
 });

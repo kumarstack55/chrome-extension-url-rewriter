@@ -1,5 +1,5 @@
 body {
-  width: 400px;
+  width: 600px;
   margin: 0;
   padding: 10px;
   font-family: Arial, sans-serif;
@@ -28,22 +28,54 @@ code {
   color: #333;
 }
 
-.url-container {
+#url-list {
   display: flex;
-  gap: 5px;
-  align-items: center;
-  margin-bottom: 10px;
+  flex-direction: column;
+  gap: 15px;
 }
 
-#url-display {
-  flex: 1;
+.url-container {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  grid-template-rows: auto auto;
+  gap: 5px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: #f9f9f9;
+}
+
+.url-name {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  font-weight: bold;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.url-display {
+  grid-column: 1;
+  grid-row: 2;
   padding: 5px;
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 3px;
+  background: white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+  color: #007bff;
 }
 
-#copy-btn {
+.url-display:hover {
+  text-decoration: underline;
+}
+
+.copy-btn {
+  grid-column: 2;
+  grid-row: 2;
   background: #007bff;
   border: none;
   border-radius: 3px;
@@ -53,13 +85,16 @@ code {
   transition: background 0.2s;
 }
 
-#copy-btn:hover {
+.copy-btn:hover {
   background: #0056b3;
 }
 
-#copy-message {
+.copy-message {
+  grid-column: 3;
+  grid-row: 2;
   color: #28a745;
   font-size: 14px;
   font-weight: bold;
-  text-align: center;
+  white-space: nowrap;
+  padding: 0 10px;
 }
