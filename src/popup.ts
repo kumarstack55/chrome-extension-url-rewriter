@@ -69,6 +69,22 @@ class SupportGoogleComRewriter extends UrlRewriter {
   }
 }
 
+class XDotComRewriter extends UrlRewriter {
+  getName(): string {
+    return "X.com Rewriter";
+  }
+
+  getRewritablePattern(): string {
+    return "^https://x\\.com/";
+  }
+
+  rewriteUrl(url: string): string | null {
+    const u = new URL(url);
+    u.searchParams.delete("s");
+    return u.toString();
+  }
+}
+
 class GadRemoverRewriter extends UrlRewriter {
   // Urchin Tracking Module (UTM) parameters
   // https://support.google.com/analytics/answer/11242870?hl=en
@@ -463,6 +479,20 @@ class LanguageRewriter extends UrlRewriter {
   }
 }
 
+class NoopRewriter extends UrlRewriter {
+  getName(): string {
+    return "Original URL";
+  }
+
+  getRewritablePattern(): string {
+    return "^.*";
+  }
+
+  rewriteUrl(url: string): string | null {
+    return url;
+  }
+}
+
 class Result {
   private name: string;
   private url: string;
@@ -538,22 +568,9 @@ class RewriterFactory {
   }
 }
 
-class NoopRewriter extends UrlRewriter {
-  getName(): string {
-    return "Original URL";
-  }
-
-  getRewritablePattern(): string {
-    return "^.*";
-  }
-
-  rewriteUrl(url: string): string | null {
-    return url;
-  }
-}
-
 const rewriterFactory = new RewriterFactory();
 rewriterFactory.addRewriter(new AmazonCoJpRewriter());
+rewriterFactory.addRewriter(new XDotComRewriter());
 rewriterFactory.addRewriter(new SupportGoogleComRewriter());
 rewriterFactory.addRewriter(new GadRemoverRewriter());
 rewriterFactory.addRewriter(new LanguageCountryRewriter());

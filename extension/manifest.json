@@ -2,15 +2,11 @@
   "manifest_version": 3,
   "name": "Share link",
   "short_name": "Share link",
-  "description": "Rewrite URLs based on user-defined rules.",
+  "description": "Rewrite URLs based on defined rules for shareing links.",
   "version": "0.0.1",
-  "homepage_url": "https://github.com/kumarstack55/chrome-extension-rewrite-url",
-  "permissions": ["storage", "activeTab"],
-  "commands": {
-    "command-rewrite": {
-      "description": "Rewrite URL"
-    }
-  },
+  "homepage_url": "https://github.com/kumarstack55/chrome-extension-share-link",
+  "permissions": ["activeTab"],
+  "commands": {},
   "action": {
     "default_popup": "popup.html"
   },
