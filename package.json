@@ -1,0 +1,13 @@
+{
+  "name": "chrome-extension-url-rewriter",
+  "version": "0.0.1",
+  "description": "Rewrite URLs based on user-defined rules.",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "typescript": "^5.3.3"
+  }
+}
