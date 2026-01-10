@@ -11,8 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "types": ["chrome"]
+    "types": ["chrome", "node"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "extension"]
+  "exclude": ["node_modules", "extension", "src/**/*.test.ts"]
 }

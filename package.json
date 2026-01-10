@@ -2,12 +2,18 @@
   "name": "chrome-extension-url-rewriter",
   "version": "0.0.1",
   "description": "Rewrite URLs based on user-defined rules.",
+  "engines": {
+    "node": ">=24.0.0",
+    "npm": ">=11.0.0"
+  },
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "test": "tsc -p src/tsconfig.test.json && node --test extension/**/*.test.js"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
+    "@types/node": "^22.10.5",
     "typescript": "^5.3.3"
   }
 }
