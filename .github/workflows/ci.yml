@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -35,8 +37,21 @@ jobs:
           cp -r extension/* chrome-extension-url-rewriter/extensions/
           find chrome-extension-url-rewriter/extensions -name '*.test.js' -delete
 
+      - name: Create zip archive
+        run: |
+          cd chrome-extension-url-rewriter
+          zip -r ../chrome-extension-url-rewriter.zip .
+          cd ..
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: chrome-extension-url-rewriter
           path: chrome-extension-url-rewriter/
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: chrome-extension-url-rewriter.zip
+          generate_release_notes: true
