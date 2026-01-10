@@ -10,11 +10,13 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "test": "tsc -p src/tsconfig.test.json && node --test extension/**/*.test.js"
+    "test": "tsc -p src/tsconfig.test.json && node --test extension/**/*.test.js",
+    "clean": "rimraf --glob extension/**/*.js"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
     "@types/node": "^22.10.5",
+    "rimraf": "^6.1.2",
     "typescript": "^5.3.3"
   }
 }
