@@ -33,6 +33,7 @@ jobs:
           mkdir -p chrome-extension-url-rewriter/extensions
           cp README.md chrome-extension-url-rewriter/
           cp -r extension/* chrome-extension-url-rewriter/extensions/
+          find chrome-extension-url-rewriter/extensions -name '*.test.js' -delete
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
