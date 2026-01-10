@@ -1,3 +1,4 @@
+import { setHeapSnapshotNearHeapLimit } from "v8";
 import { UrlRewriter } from "./base.js";
 
 export class LanguageCountryRewriter extends UrlRewriter {
@@ -9,10 +10,28 @@ export class LanguageCountryRewriter extends UrlRewriter {
     return "/[a-z]{2}-[A-Za-z]{2}/";
   }
 
-  private isLanguageCountry(part: string): boolean {
+  private getCanonicalLocale(part: string): string | null {
     try {
-      const [canon] = Intl.getCanonicalLocales(String(part).replace("_", "-"));
-      return /^[a-z]{2,3}-[A-Z]{2}$/.test(canon);
+      const part2 = part.replace("_", "-");
+      const [canon] = Intl.getCanonicalLocales(part2);
+      return canon;
+    } catch {
+      return null;
+    }
+  }
+
+  private getSeparator(part: string): string | null {
+    if (part.includes("-")) {
+      return "-";
+    } else if (part.includes("_")) {
+      return "_";
+    }
+    return null;
+  }
+
+  private isLanguageCountry(canon: string): boolean {
+    try {
+      return /^[a-z]{2}-[A-Z]{2}$/.test(canon);
     } catch {
       return false;
     }
@@ -38,38 +57,48 @@ export class LanguageCountryRewriter extends UrlRewriter {
 
     const pathParts = pathname.split("/");
     const newPathParts = pathParts.map((part) => {
-      if (this.isLanguageCountry(part)) {
-        console.log(`Found language-country part: ${part}`);
-
-        const [lang, country] = part.split("-");
-
-        let newLang = "en";
-        let newCountry = "US";
-        if (part.toLocaleLowerCase() === "en-us") {
-          newLang = "ja";
-          newCountry = "JP";
-        }
-
-        if (this.isLower(lang)) {
-          newLang = newLang.toLowerCase();
-        } else if (this.isUcFirst(lang)) {
-          newLang = this.ucFirst(newLang);
-        } else {
-          newLang = newLang.toUpperCase();
-        }
-
-        if (this.isLower(country)) {
-          newCountry = newCountry.toLowerCase();
-        } else if (this.isUcFirst(country)) {
-          newCountry = this.ucFirst(newCountry);
-        } else {
-          newCountry = newCountry.toUpperCase();
-        }
-
-        return `${newLang}-${newCountry}`;
+      console.log(`Processing part: ${part}`);
+      const canon = this.getCanonicalLocale(part);
+      if (!canon) {
+        return part;
       }
 
-      return part;
+      if (!this.isLanguageCountry(canon)) {
+        return part;
+      }
+      console.log(`Found language-country part: ${part}`);
+
+      const separator = this.getSeparator(part);
+      if (!separator) {
+        return part;
+      }
+
+      const [lang, country] = part.split(separator);
+
+      let newLang = "en";
+      let newCountry = "US";
+      if (canon.toLocaleLowerCase() === "en-us") {
+        newLang = "ja";
+        newCountry = "JP";
+      }
+
+      if (this.isLower(lang)) {
+        newLang = newLang.toLowerCase();
+      } else if (this.isUcFirst(lang)) {
+        newLang = this.ucFirst(newLang);
+      } else {
+        newLang = newLang.toUpperCase();
+      }
+
+      if (this.isLower(country)) {
+        newCountry = newCountry.toLowerCase();
+      } else if (this.isUcFirst(country)) {
+        newCountry = this.ucFirst(newCountry);
+      } else {
+        newCountry = newCountry.toUpperCase();
+      }
+
+      return `${newLang}${separator}${newCountry}`;
     });
 
     u.pathname = newPathParts.join("/");

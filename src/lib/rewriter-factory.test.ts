@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import { RewriterFactory, ResultSet, Result } from "./rewriter-factory.js";
+import { XDotComRewriter } from "./rewriters/x-dot-com.js";
 
 describe("RewriterFactory", () => {
   describe("create", () => {
@@ -29,7 +30,6 @@ describe("RewriterFactory", () => {
       assert.ok(result1.isEmpty());
 
       // Add a rewriter
-      const { XDotComRewriter } = require("./rewriters/x-dot-com.js");
       factory.addRewriter(new XDotComRewriter());
 
       const matcher2 = factory.getRewriterMatcher();

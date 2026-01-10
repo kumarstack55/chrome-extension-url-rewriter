@@ -3,6 +3,16 @@ import assert from "node:assert";
 import { LanguageCountryRewriter } from "./language-country.js";
 
 describe("LanguageCountryRewriter", () => {
+  it("should rewrite en_us to ja_jp in lowercase", () => {
+    const rewriter = new LanguageCountryRewriter();
+    const inputUrl = "https://example.com/en_us/docs";
+    const expectedUrl = "https://example.com/ja_jp/docs";
+
+    const result = rewriter.rewriteUrl(inputUrl);
+
+    assert.strictEqual(result, expectedUrl);
+  });
+
   it("should rewrite en-us to ja-jp in lowercase", () => {
     const rewriter = new LanguageCountryRewriter();
     const inputUrl = "https://example.com/en-us/docs";

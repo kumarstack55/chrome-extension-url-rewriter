@@ -64,9 +64,7 @@ code {
   border: 1px solid #ccc;
   border-radius: 3px;
   background: white;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-all;
   text-decoration: none;
   color: #007bff;
 }
