@@ -35,14 +35,14 @@ jobs:
 
       - name: Prepare distribution directory
         run: |
-          mkdir -p chrome-extension-url-rewriter/extensions
-          cp README.md chrome-extension-url-rewriter/
-          cp -r extension/* chrome-extension-url-rewriter/extensions/
-          find chrome-extension-url-rewriter/extensions -name '*.test.js' -delete
+          mkdir -p dist/extensions
+          cp README.md dist/
+          cp -r extension/* dist/extensions/
+          find dist/extensions -name '*.test.js' -delete
 
       - name: Create zip archive
         run: |
-          cd chrome-extension-url-rewriter
+          cd dist
           zip -r ../chrome-extension-url-rewriter.zip .
           cd ..
 
