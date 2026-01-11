@@ -120,3 +120,20 @@ code {
   border-radius: 5px;
   border: 1px solid #ddd;
 }
+
+.diff-added {
+  background-color: #d4edda;
+  color: #155724;
+  font-weight: bold;
+}
+
+.diff-removed {
+  background-color: #f8d7da;
+  color: #721c24;
+  text-decoration: line-through;
+  font-weight: bold;
+}
+
+.diff-unchanged {
+  color: #333;
+}

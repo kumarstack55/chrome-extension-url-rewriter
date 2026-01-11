@@ -6,6 +6,7 @@ import { GadRemoverRewriter } from "./rewriters/gad-remover.js";
 import { LanguageCountryRewriter } from "./rewriters/language-country.js";
 import { LanguageRewriter } from "./rewriters/language.js";
 import { NoopRewriter } from "./rewriters/noop.js";
+import { KubernetesDotIoRewriter } from "./rewriters/kubernetes-dot-io.js";
 
 export class Result {
   private name: string;
@@ -83,13 +84,21 @@ export class RewriterFactory {
 
   static create(): RewriterFactory {
     const factory = new RewriterFactory();
+
+    // site specific rewriters
+    factory.addRewriter(new KubernetesDotIoRewriter());
     factory.addRewriter(new AmazonCoJpRewriter());
     factory.addRewriter(new XDotComRewriter());
     factory.addRewriter(new SupportGoogleComRewriter());
+
+    // generic rewriters
     factory.addRewriter(new GadRemoverRewriter());
     factory.addRewriter(new LanguageCountryRewriter());
     factory.addRewriter(new LanguageRewriter());
+
+    // noop rewriter (should be last)
     factory.addRewriter(new NoopRewriter());
+
     return factory;
   }
 }

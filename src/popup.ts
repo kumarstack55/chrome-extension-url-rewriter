@@ -1,8 +1,48 @@
 import { RewriterFactory, Result, ResultSet } from "./lib/rewriter-factory.js";
+import { diffChars } from "diff";
 
 const rewriterFactory = RewriterFactory.create();
 
+function generateDiffHtml(originalUrl: string, newUrl: string): string {
+  const diff = diffChars(originalUrl, newUrl);
+  let html = "";
+
+  diff.forEach((part) => {
+    const text = escapeHtml(part.value);
+    if (part.added) {
+      html += `<span class="diff-added">${text}</span>`;
+    } else if (part.removed) {
+      html += `<span class="diff-removed">${text}</span>`;
+    } else {
+      html += `<span class="diff-unchanged">${text}</span>`;
+    }
+  });
+
+  return html;
+}
+
+function escapeHtml(text: string): string {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function escapeMarkdownLinkText(text: string): string {
+  text = text.replace(/\\/g, "\\\\");
+  text = text.replace(/\[/g, "\\[");
+  text = text.replace(/\]/g, "\\]");
+  text = text.replace(/\*/g, "\\*");
+  text = text.replace(/_/g, "\\_");
+  text = text.replace(/`/g, "\\`");
+  text = text.replace(/~/g, "\\~");
+  text = text.replace(/!/g, "\\!");
+  text = text.replace(/\r/g, " ");
+  text = text.replace(/\n/g, " ");
+  return text;
+}
+
 function updatePopupContent(
+  originalUrl: string,
   resultSet: ResultSet,
   title: string | undefined
 ): void {
@@ -42,12 +82,15 @@ function updatePopupContent(
     nameLabel.textContent = nameAndUrlLength;
     container.appendChild(nameLabel);
 
-    // Create URL link
+    // Generate and display diff
+    const diffHtml = generateDiffHtml(originalUrl, url);
+
+    // Create URL link with diff display
     const urlLink = document.createElement("a");
     urlLink.className = "url-display";
     urlLink.href = url;
-    urlLink.textContent = url;
     urlLink.target = "_blank";
+    urlLink.innerHTML = diffHtml;
     container.appendChild(urlLink);
 
     // Create copy button
@@ -87,7 +130,8 @@ function updatePopupContent(
     copyTextToClipboardAndShowCopyMessage(copyTextBtn, copyMessage, text);
 
     // Add copy markdwon functionality
-    const markdownLink = `[${title2}](${url})`;
+    const escapedTitle = escapeMarkdownLinkText(title2);
+    const markdownLink = `[${escapedTitle}](${url})`;
     copyTextToClipboardAndShowCopyMessage(
       copyMarkdownBtn,
       copyMessage,
@@ -121,7 +165,7 @@ function tryRewriteUrlAndUpdatePopup(
   const resultSet = rewriterMatcher.match(url);
 
   console.log(resultSet);
-  updatePopupContent(resultSet, title);
+  updatePopupContent(url, resultSet, title);
 }
 
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
