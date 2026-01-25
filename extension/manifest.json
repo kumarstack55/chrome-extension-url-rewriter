@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Share link",
-  "short_name": "Share link",
+  "name": "Rewrite and Share the link - Clean, rewrite, and share links. ",
+  "short_name": "Rewrite & Share the link",
   "description": "Rewrite URLs based on defined rules for shareing links.",
   "version": "0.0.1",
   "homepage_url": "https://github.com/kumarstack55/chrome-extension-share-link",
