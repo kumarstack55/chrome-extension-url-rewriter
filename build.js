@@ -3,6 +3,7 @@ import * as esbuild from "esbuild";
 const options = {
   entryPoints: [
     "src/popup.ts",
+    "src/options.ts",
   ],
   bundle: true,
   outdir: "extension",

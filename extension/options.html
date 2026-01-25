@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Settings - Rewrite and Share the link</title>
+    <link rel="stylesheet" href="options.css">
+    <script type="module" src="options.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Settings</h1>
+
+      <div class="settings-section">
+        <h2>Language & Country Settings</h2>
+        <p class="description">Configure language and country code pairs. Priority is given from top to bottom.</p>
+
+        <ul id="pairs-list" class="pairs-list"></ul>
+
+        <button type="button" id="add" class="button secondary">+ Add</button>
+      </div>
+
+      <div id="message" class="message"></div>
+
+      <div class="button-group">
+        <button id="save" class="button primary">Save</button>
+        <button id="reset" class="button secondary">Reset</button>
+      </div>
+    </div>
+  </body>
+</html>

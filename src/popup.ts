@@ -44,7 +44,7 @@ function escapeMarkdownLinkText(text: string): string {
 function updatePopupContent(
   originalUrl: string,
   resultSet: ResultSet,
-  title: string | undefined
+  title: string | undefined,
 ): void {
   const results = resultSet.getResults();
   const urlList = document.getElementById("url-list") as HTMLElement;
@@ -135,7 +135,7 @@ function updatePopupContent(
     copyTextToClipboardAndShowCopyMessage(
       copyMarkdownBtn,
       copyMessage,
-      markdownLink
+      markdownLink,
     );
 
     urlList.appendChild(container);
@@ -145,7 +145,7 @@ function updatePopupContent(
 function copyTextToClipboardAndShowCopyMessage(
   copyBtn: HTMLElement,
   copyMessage: HTMLElement,
-  text: string
+  text: string,
 ): void {
   copyBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(text).then(() => {
@@ -159,7 +159,7 @@ function copyTextToClipboardAndShowCopyMessage(
 
 function tryRewriteUrlAndUpdatePopup(
   url: string,
-  title: string | undefined
+  title: string | undefined,
 ): void {
   const rewriterMatcher = rewriterFactory.getRewriterMatcher();
   const resultSet = rewriterMatcher.match(url);
@@ -168,17 +168,36 @@ function tryRewriteUrlAndUpdatePopup(
   updatePopupContent(url, resultSet, title);
 }
 
-chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-  const activeTab = tabs[0];
-  const activeTabUrl = activeTab.url;
-  console.log(activeTabUrl);
-
-  const title: string | undefined = activeTab.title;
-
-  if (!activeTabUrl) {
-    console.log("No active tab URL found.");
-    return;
+function addEventListenerToOptionsButton(): void {
+  const optionsButton = document.getElementById(
+    "openOptions",
+  ) as HTMLButtonElement;
+  if (optionsButton) {
+    optionsButton.addEventListener("click", () => {
+      const optionsUrl = chrome.runtime.getURL("options.html");
+      chrome.tabs.create({ url: optionsUrl });
+    });
   }
+}
 
-  tryRewriteUrlAndUpdatePopup(activeTabUrl, title);
+function getActiveTabUrlAndRewrite() {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const activeTab = tabs[0];
+    const activeTabUrl = activeTab.url;
+    console.log(activeTabUrl);
+
+    const title: string | undefined = activeTab.title;
+
+    if (!activeTabUrl) {
+      console.log("No active tab URL found.");
+      return;
+    }
+
+    tryRewriteUrlAndUpdatePopup(activeTabUrl, title);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  getActiveTabUrlAndRewrite();
+  addEventListenerToOptionsButton();
 });

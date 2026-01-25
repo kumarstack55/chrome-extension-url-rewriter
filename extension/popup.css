@@ -97,11 +97,32 @@ code {
   padding: 0 10px;
 }
 
-.github-link {
+.footer-links {
   position: absolute;
   bottom: 5px;
   right: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
   font-size: 12px;
+}
+
+.footer-links button {
+  padding: 4px 10px;
+  font-size: 12px;
+  background-color: #f1f3f4;
+  color: #5f6368;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.footer-links button:hover {
+  background-color: #e8eaed;
+}
+
+.github-link {
   color: #666;
   text-decoration: none;
 }
