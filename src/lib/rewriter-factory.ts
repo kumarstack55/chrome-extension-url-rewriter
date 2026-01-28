@@ -1,12 +1,12 @@
 import { UrlRewriter } from "./rewriters/base.js";
 import { XDotComRewriter } from "./rewriters/x-dot-com.js";
 import { AmazonCoJpRewriter } from "./rewriters/amazon-co-jp.js";
-import { SupportGoogleComRewriter } from "./rewriters/support-google-com.js";
 import { GadRemoverRewriter } from "./rewriters/gad-remover.js";
 import { LanguageCountryRewriter } from "./rewriters/language-country.js";
 import { LanguageRewriter } from "./rewriters/language.js";
 import { NoopRewriter } from "./rewriters/noop.js";
 import { KubernetesDotIoRewriter } from "./rewriters/kubernetes-dot-io.js";
+import { GoogleRewriter } from "./rewriters/google.js";
 
 export class Result {
   private name: string;
@@ -85,11 +85,13 @@ export class RewriterFactory {
   static create(): RewriterFactory {
     const factory = new RewriterFactory();
 
+    // TODO: load configuration
+
     // site specific rewriters
     factory.addRewriter(new KubernetesDotIoRewriter());
     factory.addRewriter(new AmazonCoJpRewriter());
     factory.addRewriter(new XDotComRewriter());
-    factory.addRewriter(new SupportGoogleComRewriter());
+    factory.addRewriter(new GoogleRewriter());
 
     // generic rewriters
     factory.addRewriter(new GadRemoverRewriter());

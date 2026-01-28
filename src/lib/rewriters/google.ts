@@ -1,12 +1,12 @@
 import { UrlRewriter } from "./base.js";
 
-export class SupportGoogleComRewriter extends UrlRewriter {
+export class GoogleRewriter extends UrlRewriter {
   getName(): string {
-    return "support.google.com Language Switcher";
+    return "Google Language Switcher";
   }
 
   getRewritablePattern(): string {
-    return "^https://support\\.google\\.com/";
+    return "^https://.*\\.google\\.(?:dev|com)/";
   }
 
   rewriteUrl(url: string): string | null {
